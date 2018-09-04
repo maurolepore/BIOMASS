@@ -1,12 +1,11 @@
+rm(list = ls())
 library(profvis)
 library(BIOMASS)
 
-data("KarnatakaForest")
-selecPlot<-KarnatakaForest$plotId%in%c("BSP2","BSP12","BSP14","BSP26","BSP28","BSP30","BSP34","BSP44","BSP63","BSP65")
-KarnatakaForestsub<-droplevels(KarnatakaForest[selecPlot,])
+data("genusFamily")
 
-genus=KarnatakaForestsub$genus
-species=KarnatakaForestsub$species
+genus=genusFamily$genus
+species = NULL
 
 score = 0.5
 
