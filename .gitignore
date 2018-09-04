@@ -36,3 +36,5 @@ rsconnect/
 E/*
 E_zip*
 test/speed_analysis/CorrectTaxo_speed_bigdata\.Rprofvis
+
+test/speed_analysis/out\.txt
