@@ -1,5 +1,20 @@
-getWoodDensity <- function(genus, species, stand = NULL, family = NULL, region = "World", 
-                           addWoodDensityData = NULL)
+rm(list = ls())
+data(KarnatakaForest)
+
+Taxo = correctTaxo(KarnatakaForest$genus, species = KarnatakaForest$species)
+KarnatakaForest$genusCorr<-Taxo$genusCorrected
+KarnatakaForest$speciesCorr<-Taxo$speciesCorrected
+
+genus = KarnatakaForest$genusCorr
+species = KarnatakaForest$speciesCorr
+
+stand=KarnatakaForest$plotId
+family = NULL
+region = "World"
+addWoodDensityData = NULL
+
+
+profvis(
 {  
   ### For each genus and species, assign a wood density
   
@@ -161,5 +176,5 @@ getWoodDensity <- function(genus, species, stand = NULL, family = NULL, region =
   if(nrow(result) != nrow(inputData)) 
     warning(paste("The input and the output tables have a different number of rows"))
   
-  return(result) 
-}
+
+})
