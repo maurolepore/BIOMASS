@@ -1,4 +1,7 @@
 rm(list = ls())
+library(BIOMASS)
+library(profvis)
+
 data(KarnatakaForest)
 
 Taxo = correctTaxo(KarnatakaForest$genus, species = KarnatakaForest$species)
