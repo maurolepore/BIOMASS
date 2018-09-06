@@ -1,5 +1,9 @@
 library(microbenchmark)
 
+D_simu = replicate(1000, rnorm(50000, mean=15, sd=14.5))
+
+
+
 myrtruncnorm <- function(n,lower = -1, upper = 1,mean=0,sd=1) {
   qnorm(runif(n,pnorm(lower,mean=mean,sd=sd),pnorm(upper,mean=mean,sd=sd)),mean=mean,sd=sd)
 }
@@ -58,7 +62,9 @@ rt_improvement = function(D_simu){
   return(D_simu)
 }
 
-result = microbenchmark("rt_msm" = rt_msm(D_simu), "rt_myr" = rt_myrtroncnorm(D_simu), "rt_improvement"=rt_improvement(D_simu), times = 10)
+result = microbenchmark("rt_msm" = rt_msm(D_simu), 
+                        "rt_myr" = rt_myrtroncnorm(D_simu), 
+                        "rt_improvement"=rt_improvement(D_simu), times = 10)
 plot(result)
 
 
