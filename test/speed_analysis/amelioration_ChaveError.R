@@ -96,3 +96,48 @@ microbenchmark("rtnorm" = msm::rtnorm(10^5, lower = -1, upper = 1),
                     "mytruncnorm"=myrtruncnorm(10^5, a=-1, b=1),
                     "rtruncnorm" = truncnorm::rtruncnorm(10^5, a=-1, b=1))
 
+
+
+
+
+rt_improvement = function(D){
+  
+  D_simu = replicate(1000, D)
+  
+  fivePercent <- round( nrow(D_simu) * 5 / 100 )
+  chaveError <- function(x)
+  { 
+    ## Assigning large errors on 5% of the trees
+    largeErrSample <- sample(length(x), fivePercent)
+    
+    D_sd = 0.0062 * x + 0.0904 # Assigning small errors on the remaining 95% trees
+    D_sd[largeErrSample] = 4.64
+    
+    x <- myrtruncnorm(n =length(x), mean = x, sd = D_sd, lower = 0.1, upper = 500)
+    return(x)
+  }
+  D_simu <- apply(D_simu, 2, chaveError)
+  return(D_simu)
+}
+
+rt_i = function(D){
+  fivePercent <- round( length(D) * 5 / 100 )
+  chaveError <- function(x)
+  { 
+    ## Assigning large errors on 5% of the trees
+    largeErrSample <- sample(length(x), fivePercent)
+    
+    D_sd = 0.0062 * x + 0.0904 # Assigning small errors on the remaining 95% trees
+    D_sd[largeErrSample] = 4.64
+    
+    x <- myrtruncnorm(n =length(x), mean = x, sd = D_sd, lower = 0.1, upper = 500)
+    return(x)
+  }
+  D_simu = replicate(1000, chaveError(D))
+  
+  return(D_simu)
+}
+
+rt_i(D)
+
+res = microbenchmark("rt_improvement"=rt_improvement(D), "rt_i"=rt_i(D))

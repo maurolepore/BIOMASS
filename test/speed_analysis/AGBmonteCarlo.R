@@ -36,12 +36,12 @@ KarnatakaForest$sdWD=dataWD$sdWD
 D=KarnatakaForest$D
 WD=KarnatakaForest$WD
 errWD = KarnatakaForest$sdWD
-HDmodel=HDmodel
+#HDmodel=HDmodel
 Dpropag ="chave2004"
 
 H = NULL
 errH = NULL
-coord = NULL
+coord = cbind(KarnatakaForest$long, KarnatakaForest$lat)
 n = 1000
 Carbon = F
 Dlim = NULL
