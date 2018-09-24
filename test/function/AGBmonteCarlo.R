@@ -97,7 +97,7 @@ AGBmonteCarlo1 = function(D, WD = NULL, errWD = NULL, H = NULL, errH = NULL, HDm
   # --------------------- WD ---------------------
   
   if(!is.null(WD) & !is.null(errWD)){
-
+    
     if(length(errWD) != length(WD))
       stop("Your wood density vector (WD) and the vector of the associated errors (errWD) don't have the same length")
     
@@ -253,10 +253,10 @@ b = seq(10, n, by = 100)
 for( i in b){
   gc(reset = T)
   time[k,1] = system.time(AGBmonteCarlo(D=KarnatakaForest$D[1:i],WD=KarnatakaForest$WD[1:i],
-                         errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004"))[1]
+                                        errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004"))[1]
   gc(reset = T)
   time[k,2] = system.time(AGBmonteCarlo1(D=KarnatakaForest$D[1:i],WD=KarnatakaForest$WD[1:i],
-                         errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004"))[1]
+                                         errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004"))[1]
   k = k + 1
   print(paste(i, k))
 }
@@ -279,13 +279,13 @@ for( i in b){
                 errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004")
   end = gc() - start
   mem[k, 1] = colSums(end)[6]
-
+  
   start = gc(reset = T)
   AGBmonteCarlo1(D=KarnatakaForest$D[1:i],WD=KarnatakaForest$WD[1:i],
-                errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004")
+                 errWD = KarnatakaForest$sdWD[1:i],HDmodel=HDmodel,Dpropag ="chave2004")
   end = gc() - start
   mem[k, 2] = colSums(end)[6]  
-
+  
   k = k + 1
   print(paste(i, k))
 }
@@ -373,27 +373,20 @@ coord = function(n, coord, WD_simu, D_simu, selec){
 coord1 = function(n, coord, WD_simu, D_simu, selec){
   param_7 <- NULL
   data(param_7, envir = environment()) # posterior parameters from MCMC algorithm
-    
+  
   bioclimParams <- getBioclimParam(coord) # get bioclim variables corresponding to the coordinates
   
-  # Posterior model parameters 
-  RSE <- param_7[selec,"sd"] # vector of simulated RSE values
+  AGB_simu = coord_cpp(tempSeas = bioclimParams$tempSeas, coeffTmp = param_7$temp[selec], 
+                       CWD = bioclimParams$CWD, coeffCWD = param_7$cwd[selec],
+                       PS = bioclimParams$precSeas, coeffPS = param_7$prec[selec],
+                       WD_simu = WD_simu, D_simu = D_simu, coeffWD =  param_7$logwsg[selec], coefflnD = param_7$logdbh[selec],
+                       coefflnD2 = param_7$logdbh2[selec], coeffE = param_7$E[selec], intercept = param_7$intercept[selec])
   
-  # Recalculating n E values based on posterior parameters associated with the bioclimatic variables
-  Tmp <- replicate(n, bioclimParams$tempSeas)
-  CWD <- replicate(n, bioclimParams$CWD)
-  PS <- replicate(n, bioclimParams$precSeas)
-  
-  Esim <- t(Tmp) * param_7[selec, "temp"] + t(CWD) * param_7[selec, "cwd"] + t(PS) * param_7[selec, "prec"]
-  
-  # Applying AGB formula over simulated matrices and vectors
-  AGB_simu <- t( t(log(WD_simu)) * param_7[selec, "logwsg"] +  
-                   t(log(D_simu)) * param_7[selec, "logdbh"] + 
-                   t(log(D_simu)^2) * param_7[selec, "logdbh2"] + Esim * -param_7[selec, "E"] + 
-                   param_7[selec, "intercept"] )
   return(AGB_simu)
   
 }
+
+
 
 
 myrtruncnorm <- function(n,lower = -1, upper = 1,mean=0,sd=1) {
@@ -403,6 +396,8 @@ myrtruncnorm <- function(n,lower = -1, upper = 1,mean=0,sd=1) {
 
 n = 1000
 a = 10000
+D = KarnatakaForest$D
+WD = KarnatakaForest$WD
 coord12 = cbind( KarnatakaForest$long[1:a], KarnatakaForest$lat[1:a] )
 D_simu = replicate(n, myrtruncnorm(a, mean= D[1:a], lower = 0.1, upper = 500))
 WD_simu = replicate(n, myrtruncnorm(a, mean = WD[1:a], lower = 0.08, upper = 1.39))
@@ -424,34 +419,41 @@ coord2 = function(n, coord, WD_simu, D_simu, selec){
   
   bioclimParams <- getBioclimParam(coord) # get bioclim variables corresponding to the coordinates
   
-  simulation = function(x){
-    Esim = bioclimParams$tempSeas * param_7[selec[x], "temp"] + 
-      bioclimParams$CWD * param_7[selec[x], "cwd"] + 
-      bioclimParams$precSeas * param_7[selec[x], "prec"]
-    AGB_simu = log(WD_simu[,x]) * param_7[selec[x], "logwsg"] +
-      log(D_simu[,x]) * param_7[selec[x], "logdbh"] +
-      log(D_simu[,x])^2 * param_7[selec[x], "logdbh2"] +
-      Esim * -param_7[selec[x], "E"] +
-      param_7[selec[x], "intercept"]
-    return(AGB_simu)
-  }
-  
+  # Posterior model parameters 
   RSE <- param_7[selec,"sd"] # vector of simulated RSE values
   
-
-  return(sapply(1:n, simulation))
+  # Recalculating n E values based on posterior parameters associated with the bioclimatic variables
+  Tmp <- replicate(n, bioclimParams$tempSeas)
+  CWD <- replicate(n, bioclimParams$CWD)
+  PS <- replicate(n, bioclimParams$precSeas)
+  
+  Esim <- t(Tmp) * param_7[selec, "temp"] + t(CWD) * param_7[selec, "cwd"] + t(PS) * param_7[selec, "prec"]
+  
+  # Applying AGB formula over simulated matrices and vectors
+  AGB_simu <- t( t(log(WD_simu)) * param_7[selec, "logwsg"] +  
+                   t(log(D_simu)) * param_7[selec, "logdbh"] + 
+                   t(log(D_simu)^2) * param_7[selec, "logdbh2"] + Esim * -param_7[selec, "E"] + 
+                   param_7[selec, "intercept"] )
+  return(AGB_simu)
   
 }
+tic()
+coord1(n, coord12, WD_simu, D_simu, selec)
+toc()
+tic()
+coord2(n, coord12, WD_simu, D_simu, selec)
+toc()
+
 all( coord(n, coord12, WD_simu, D_simu, selec) == coord2(n, coord12, WD_simu, D_simu, selec))
 
 
 res = microbenchmark("original"= coord(n, coord12, WD_simu, D_simu, selec),
                      "modified1" = coord1(n, coord12, WD_simu, D_simu, selec),
-                     "modified2" = coord1(n, coord12, WD_simu, D_simu, selec))
+                     "modified2" = coord2(n, coord12, WD_simu, D_simu, selec))
 
 
 
-##### function coordonates spped and memory
+##### function coordonates speed and memory
 
 n = 1000
 coord12 = cbind( KarnatakaForest$long, KarnatakaForest$lat )
