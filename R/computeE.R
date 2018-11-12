@@ -50,6 +50,8 @@
 computeE <- function(coord) {
   path <- folderControl("E")
 
+  ##GCO il y a des fonction pour travailler directement sur les chemins
+  ##GCO nam <- file.path(path$path, "E.bil")
   # find the raster
   nam <- paste(path$path, "E.bil", sep = path$sep)
   RAST <- raster(nam)

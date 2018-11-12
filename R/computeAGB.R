@@ -65,9 +65,11 @@ computeAGB <- function(D, WD, H = NULL, coord = NULL, Dlim = NULL) {
       stop("H and WD have different length")
     }
     if (any(is.na(H)) & !any(is.na(D))) {
+      ##GCO reformuler: There is some NA values in given heights. For those trees the function will return NA AGB ...
       warning("NA values are generated for AGB values because of missing information on tree height, 
                you may construct a height-diameter model to overcome that issue (see ?HDFunction and ?retrieveH)")
     }
+    ##GCO Peut-être pas au bon endroit
     if (any(is.na(D))) {
       warning("NA values in D")
     }
@@ -97,6 +99,8 @@ computeAGB <- function(D, WD, H = NULL, coord = NULL, Dlim = NULL) {
     if (is.null(dim(coord))) {
       coord <- as.matrix(t(coord))
     }
+    
+    ##GCO je le ferais plutot après computeE en dupliquant le E calculé plutot que calculer plusieurs fois le meme E
     if (nrow(coord) == 1) {
       coord <- cbind(rep(coord[1], length(D)), rep(coord[2], length(D)))
     }

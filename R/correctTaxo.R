@@ -69,6 +69,7 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
   strsplit_NA <- function(x, patern = " ") {
     split <- tstrsplit(x, patern)
     if (length(split) == 1) {
+      ##GCO return( c(split, NA_character_) )
       return(list(split[[1]], as.character(NA)))
     }
     return(split)
@@ -90,6 +91,7 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
       setkey(taxo_already_have, query)
       file_exist <- T
     } else {
+      ##GCO del ???
       del(taxo_already_have)
       file_exist <- F
     }
@@ -98,6 +100,14 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
 
 
   # Data preparation --------------------------------------------------------
+  
+  ##GCO modification d'un paramêtre important
+  ##GCO après utilisation de la fonction read.table ou read.CSV donnera un résultat disfférent !!!
+  ##GCO faut pas jouer avec la config de l'utilisateur !!!
+  ##GCO éventuellement récupérer la valeur courante de l'option et la restituer à la fin de la fonction
+  ##GCO ou passer le parametre directement data.frame(toto,titi, stringAsFactors=FALSE)
+  ##GCO pour data.table stringsAsFactors est FALSE par défaut
+  ##GCO cet ligne doit être enlevée d'une manière ou d'une autre
   options(stringsAsFactors = F)
 
   genus <- as.character(genus)
@@ -160,6 +170,8 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
 
 
   # sending and retrive the data from taxosaurus ----------------------------
+  ##GCO tc ?? pourquoi pas dropNulls ? qui au passage se trouve dans data.table
+  ##GCO et qu'on peut donc utiliser
   tc <- function(l) Filter(Negate(is.null), l)
   con_utf8 <- function(x) httr::content(x, "text", encoding = "UTF-8")
 
@@ -178,6 +190,7 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
       retrieve <- out$url
     } else {
       loc <- tempfile(fileext = ".txt")
+      ##GCO write.table(data.frame(x, stringsAsFactors=FALSE), file = loc, col.names = FALSE, row.names = FALSE)
       write.table(data.frame(x), file = loc, col.names = FALSE, row.names = FALSE)
       args <- tc(list(file = httr::upload_file(loc), source = "iPlant_TNRS"))
       out <- httr::POST(url, body = args, httr::config(followlocation = 0))
@@ -190,6 +203,7 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
 
     timeout <- "wait"
     while (timeout == "wait") {
+      ##GCO insérer peut-être une temporisation pour éviter de demander en rafale si c'est prêt ?
       ss <- httr::GET(retrieve)
       output <- fromJSON(con_utf8(ss), FALSE)
       if (!grepl("is still being processed", output["message"]) == TRUE) {
@@ -201,6 +215,7 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
 
     if (length(out) > 0) {
       submittedName <- sapply(out, function(x) x$submittedName)
+      ##GCO t(sapply(out[[2]][[1]], function(x) c(x$matchedName, x$score)))
       receiveData <- t(sapply(out, function(x) c(x[[2]][[1]]$matchedName, x[[2]][[1]]$score)))
 
       # Remove some parasite characters
@@ -264,6 +279,11 @@ correctTaxo <- function(genus, species = NULL, score = 0.5) {
 
 
   # write all the new data on the log file created --------------------------
+  ##GCO append=TRUE marchera dans tous les cas !
+  ##fwrite(query[, .(outName, nameModified, score1), by = query],
+  ##  file = path, sep = ",", append = TRUE
+  ##)
+  
   if (file.exists(path)) {
     fwrite(query[, .(outName, nameModified, score1), by = query],
       file = path, sep = ",", append = T
