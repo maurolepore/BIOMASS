@@ -184,7 +184,7 @@ updateCache <- function(nameFile = NULL) {
         unzip(paste0(path, ".zip"), exdir = path)
       )
     } else {
-      warning("There is no name!")
+      warning("There is no name!", call. = FALSE)
     }
   }, # if it's damaged we recharge it
   warning = function(cond) {

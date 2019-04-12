@@ -21,7 +21,7 @@
 #' \dontrun{
 #' FeldRegion <- computeFeldRegion(coord)
 #' }
-#' 
+#'
 #' # Several study sites (here three sites)
 #' long <- c(-52.68, -51.12, -53.11)
 #' lat <- c(4.08, 3.98, 4.12)
@@ -29,7 +29,7 @@
 #' \dontrun{
 #' FeldRegion <- computeFeldRegion(coord)
 #' }
-#' 
+#'
 #' @references
 #' Feldpausch, T.R., et al. (2012). _Tree height integrated into pantropical forest biomass estimates._
 #' Biogeosciences, 9, 3381–3403.
@@ -96,7 +96,7 @@ computeFeldRegion <- function(coord, level = "region") {
   )
 
   if (anyNA(FeldRegion)) {
-    warning("There is NA in your final vector, those NA will be replaced by 'Pantropical'")
+    warning("There is NA in your final vector, those NA will be replaced by 'Pantropical'", call. = FALSE)
   }
 
   FeldRegion[is.na(FeldRegion)] <- "Pantropical"

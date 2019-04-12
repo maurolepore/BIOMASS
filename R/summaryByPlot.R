@@ -92,13 +92,14 @@ summaryByPlot <- function(AGB_val, plot, drawPlot = FALSE, subplot = NULL) {
     if (!requireNamespace("sf", quietly = T)) {
       warning(
         'To use this part of the function you must have the "sf" library\n\n',
-        '\t\tinstall.packages("sf")'
+        '\t\tinstall.packages("sf")',
+        call. = FALSE
       )
       subplot <- NULL
     }
     if (!any(subplot$subplot %in% plot)) {
       warning(
-        "The subplot parameter do not correspond to any plot"
+        "The subplot parameter do not correspond to any plot", call. = FALSE
       )
       subplot <- NULL
     }

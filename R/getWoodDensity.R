@@ -161,7 +161,8 @@ getWoodDensity <- function(genus, species, stand = NULL, family = NULL, region =
   if (nrow(subWdData) < 1000 && is.null(addWoodDensityData)) {
     warning(
       "DRYAD data only stored ", nrow(subWdData), " wood density values in your region of interest. ",
-      'You could provide additional wood densities (parameter addWoodDensityData) or widen your region (region="World")'
+      'You could provide additional wood densities (parameter addWoodDensityData) or widen your region (region="World")',
+      call. = FALSE
     )
   }
 
